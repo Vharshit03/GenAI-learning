@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Website</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<header class="header">
+    <div class="header-title">My Website</div>
+    <nav class="nav">
+        <div class="nav-item" data-page="home">Home</div>
+        <div class="nav-item" data-page="about">About</div>
+        <div class="nav-item" data-page="contact">Contact</div>
+    </nav>
+</header>
+
+<main class="content">
+    <section class="input-section">
+        <h2 class="section-title">Enter Your Details</h2>
+        
+        <label for="nameInput">Name:</label>
+        <input type="text" id="nameInput" placeholder="Enter name">
+        
+        <label for="emailInput">Email:</label>
+        <input type="email" id="emailInput" placeholder="Enter email">
+        
+        <label for="phoneInput">Phone:</label>
+        <input type="tel" id="phoneInput" placeholder="Enter phone">
+        
+        <button class="submit-btn" id="submitBtn">Submit</button>
+        <div id="msg" class="message-area" aria-live="polite"></div>
+    </section>
+    
+    <section class="user-list-section">
+        <h2 class="section-title">Registered Users</h2>
+        <div class="user-list" id="userlist"></div>
+    </section>
+</main>
+<script src="./app.js"></script>
+</body>
+</html>

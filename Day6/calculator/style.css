@@ -1,1 +1,72 @@
-body { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; min-height: 100vh; } #calculator { background-color: #fff; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); overflow: hidden; width: 300px; } #display { width: 100%; padding: 20px; font-size: 2em; text-align: right; border: none; box-sizing: border-box; background-color: #eee; color: #333; } .buttons { display: grid; grid-template-columns: repeat(4, 1fr); } .button { background-color: #e0e0e0; border: 1px solid #ccc; padding: 20px; font-size: 1.5em; cursor: pointer; transition: background-color 0.2s; } .button:hover { background-color: #d0d0d0; } .button:active { background-color: #c0c0c0; } .button:nth-child(4n) { background-color: #f09; color: #fff; } .button:nth-child(4n):hover { background-color: #e08; } .button:nth-child(4n):active { background-color: #d07; } .large-button { grid-column: span 2; background-color: #4CAF50; color: #fff; } .large-button:hover { background-color: #45a049; } .large-button:active { background-color: #3e8e41; } 
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #282c34; /* Dark background */
+    color: #ffffff;
+}
+
+.calculator {
+    background-color: #21252b; /* Slightly lighter dark for calculator body */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    width: 300px;
+}
+
+.calculator-display {
+    width: calc(100% - 20px);
+    background-color: #363b46; /* Darker display */
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 2em;
+    text-align: right;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+}
+
+.calculator-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.button {
+    background-color: #4a4f59; /* Darker button background */
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 15px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.button:hover {
+    background-color: #5d636e; /* Slightly lighter on hover */
+}
+
+.button.operator {
+    background-color: #f09a37; /* Orange for operators */
+}
+
+.button.operator:hover {
+    background-color: #ffb15e;
+}
+
+.button.equals {
+    background-color: #3f8f3f; /* Green for equals */
+}
+
+.button.equals:hover {
+    background-color: #5cb85c;
+}
+
+.button.span-2 {
+    grid-column: span 2;
+}

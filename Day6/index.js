@@ -3,30 +3,38 @@ import ReadlineSync from 'readline-sync'
 import 'dotenv/config'
 import {exec} from 'child_process'
 import util from 'util'
-import os from 'os'
+import fs from 'fs'
 
 
+
+
+
+const asyncwriteFile = util.promisify(fs.writeFile)
 const execute = util.promisify(exec)
-
-const platform = os.platform();
-
 const ai = new GoogleGenAI({})
 
 
 
-async function executeCommand({command}) {
+async function executeCommand({command,content,filePath}) {
 
     try{
-        const {stdout,stderr} = await execute(command)
+        if(content && filePath){
+            await asyncwriteFile(filePath,content)
+            return `Success: File Created at ${filePath}`
+        }
+        else if(command){
 
-        if(stderr){
-            return `Error: ${stderr}`
+            const {stdout,stderr} = await execute(command)
+            if(stderr){
+                return `Error: ${stderr}`
+            }
+            return `Success: ${stdout || 'command executed successfully'}`
         }
 
-        return `Success : ${stdout}`
+        return `Error: NO content or command provided`
     }
-    catch(err){
-        return `Error: ${err}`
+    catch(error){
+        return `Error: ${error.message}`
     }
     
 }
@@ -34,193 +42,132 @@ async function executeCommand({command}) {
 
 const executeInfo = {
     name:'executeCommand',
-    description:"It takes any shell/terminal command and execute it. It will help us to create, read, write, update, delete any folder and file",
+    description:"Execute commands or create files with content on Windows systems",
     parameters:{
         type:Type.OBJECT,
         properties:{
             command:{
-                type:Type.STRING,
-                description:"It is the terminal/shell command. Ex: mkdir calculator , touch calculator/index.js etc"
+                type:'STRING',
+                description:'A Windows terminal command (e.g., "mkdir my-project")'
+            },
+            content:{
+                type:'STRING',
+                description:'Complete file content to write (for HTML/CSS/JS files)'
+            },
+            filePath:{
+                type:'STRING',
+                description:'Path where file should be created (e.g., "my-project/index.html")'
             }
         },
-        required:['command']
     }
+}
+
+const availableTools = {
+   executeCommand
 }
 
 const History = [];
 
-async function buildWebsite() {
+async function buildWebsite(problem) {
 
-    let iterations = 0;
-    const MAX_ITERATIONS = 20; // ✅ FIX #3 - Add iteration limit
+    History.push({
+        role:'user',
+        parts:[{text:problem}]
+    })
 
-    while(iterations < MAX_ITERATIONS){
-        iterations++;
+    while(true){
 
-        const result = await ai.models.generateContent({
-            model:'gemini-2.5-flash', 
-            contents:History,
-            config:{
-            systemInstruction:` 
-            You are a website Builder, which will create the frontend part of the website using terminal/shell Command.
-            You will give shell/terminal command one by one and our tool will execute it.
+        try{
+            const result = await ai.models.generateContent({
+                model:'gemini-2.5-flash', 
+                contents:History,
+                config:{
+                systemInstruction:`You are an expert Website builder. Follow these steps:
+                        
+                        1. FIRST create the project folder: mkdir project-name
+                        2. THEN create files with COMPLETE TEMPLATES:
+                        - index.html (with basic HTML5 structure)
+                        - style.css (with basic styles)
+                        - script.js (with basic functionality)
+                        
+                        IMPORTANT:
+                        - Use the 'content' parameter to send COMPLETE file content
+                        - Always include the 'filePath' parameter when writing files
+                        - For folders, use the 'command' parameter with mkdir
+                        - Include proper DOCTYPE, meta tags, and semantic HTML
+                        - Include responsive CSS (viewport meta, flexible units)
+                        - Include DOMContentLoaded event in JavaScript
+                        
+                        EXAMPLE for a calculator:
+                        1. {command: "mkdir calculator"}
+                        2. {content: "<!DOCTYPE html>...", filePath: "calculator/index.html"}
+                        3. {content: "body { font-family: Arial...}", filePath: "calculator/style.css"}
+                        4. {content: "document.addEventListener...", filePath: "calculator/script.js"}`,
+                tools:[{
+                        functionDeclarations:[executeInfo]
+                    }] 
 
-            Give the command according to the Operating system we are using.
-            My Current user Operating system is: ${platform}.
+               }
+            });
 
-            CRITICAL: Write complete file content in ONE command and add code with proper indentation. Do NOT write files line by line.
-
-            Your Job
-            1: Analyse the user query
-            2: Take the neccessary action after analysing the query by giving proper shell command according to the user operating system.
-
-            Step By Step Guide
-
-            1: First create the folder for the website, ex: mkdir calculator
-            2: Create html file,CSS file and Javascript file ex: touch calculator/index.html (or just use the write command directly)
-            3: Write COMPLETE html file content in ONE command
-            4: Write COMPLETE css file content in ONE command
-            5: Write COMPLETE javascript file content in ONE command
-            6: Fix errors if present by reading and rewriting files
+            if(result.functionCalls?.length>0){
 
 
-            Write File Content Examples:
+                const {name,args} = result.functionCalls[0]
 
-            
-            For Windows (PowerShell - use this format)
-            
-            @"
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Calculator</title>
-                <link rel="stylesheet" href="style.css">
-            </head>
-            <body>
-                <div id="calculator"></div>
-                <script src="script.js"></script>
-            </body>
-            </html>
-            "@ | Out-File -FilePath calculator/index.html -Encoding utf8
-
-            OR if PowerShell is not available, create a temp file and copy:
-            
-            echo ^<!DOCTYPE html^>^<html^>^<head^>^<title^>Calculator^</title^>^<link rel="stylesheet" href="style.css"^>^</head^>^<body^>^<div id="calculator"^>^</div^>^<script src="script.js"^>^</script^>^</body^>^</html^> > calculator\\index.html
-            
-            
-            For Mac/Linux (use heredoc - this writes everything at once):
-
-            cat > calculator/index.html << 'EOF'
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Calculator</title>
-                <link rel="stylesheet" href="style.css">
-            </head>
-            <body>
-                <div id="calculator"></div>
-                <script src="script.js"></script>
-            </body>
-            </html>
-            EOF
-
-            For CSS files:
-            cat > calculator/style.css << 'EOF'
-            body { margin: 0; padding: 20px; }
-            #calculator { max-width: 400px; margin: 0 auto; }
-            EOF
-
-            For JavaScript files:
-            cat > calculator/script.js << 'EOF'
-            document.getElementById('calculator').innerHTML = 'Calculator App';
-            console.log('Calculator loaded');
-            EOF
-            
-                    
-            `
-            ,
-            tools:[
-                {
-                    functionDeclarations:[executeInfo]
+                if (args.content && args.filePath) {
+                    console.log(`Creating file: ${args.filePath}`);
+                } 
+                else if (args.command) {
+                    console.log(`Executing command: ${args.command}`);
                 }
-            ] 
 
-           }
-        });
-
-        if(result.functionCalls && result.functionCalls.length>0){
+                const response = await availableTools[name](args);
+                console.log(`Result: ${response}`);
 
 
-            const functionCall = result.functionCalls[0]
+                History.push({
+                    role:'model',
+                    parts:[
+                        {
+                            functionCall: result.functionCalls[0]
+                        }
+                    ]
+                })
 
-            const {name,args} = functionCall
-
-            const toolResponse = await executeCommand(args);
-
-
-            const functionResponsePart = {
-                name:functionCall.name,
-                response:{
-                    result:toolResponse
-                }
+                History.push({
+                    role:'user',
+                    parts:[{
+                        functionResponse:{
+                            name:name,
+                            response:{response}
+                        }
+                    }]
+                })
             }
-
-            History.push({
-                role:'model',
-                parts:[
-                    {
-                        functionCall:functionCall
-                    }
-                ]
-            })
-
-            History.push({
-                role:'tool',
-                parts:[
-                    {
-                        functionResponse:functionResponsePart
-                    }
-                ]
-            })
-
+            else{
+                History.push({
+                    role:'model',
+                    parts:[{ text : result.text}]
+                })
+                console.log(result.text)
+                break;
+            }
         }
-        else{
-            History.push({
-                role:'model',
-                parts:[
-                    {
-                        text:result.text
-                    }
-                ]
-            })
-
-            console.log(result.text)
+        catch(error){
+            console.error("Error:", error);
             break;
         }
     }
 
-    // ✅ FIX #3 - Handle max iterations
-    if(iterations >= MAX_ITERATIONS){
-        console.log('\n⚠️ Max iterations reached. Task may be incomplete.');
-    }
     
 }
 
-while(true){
-
-    const question = ReadlineSync.question('Tell me to Build something: ')
-
-    if(question.toLowerCase() === 'exit') // ✅ Better comparison
-        break;
-
-    History.push({
-        role:'user',
-        parts:[
-            {
-                text:question
-            }
-        ]
-    })
-
-    await buildWebsite()
+async function main() {
+    console.log("🚀 Website Builder - Describe the website you want to create");
+    const userProblem = ReadlineSync.question("Your idea: ");
+    await buildWebsite(userProblem);
+    main();
 }
+
+main();

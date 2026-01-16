@@ -1,14 +1,14 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import 'dotenv/config'
 
-const ai = new GoogleGenAI({});
+const ai = new GoogleGenerativeAI({});
 
 async function main() {
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.0-flash",
     contents: "What is current date and my name?",
     config:{
-        systemInstruction:`your name is Harshit Vashisht , current date is: ${new Date.now()}`
+        systemInstruction:`your name is Harshit Vashisht , current date is: ${new Date().toLocaleDateString()}`
     }
   });
   console.log(response.text);

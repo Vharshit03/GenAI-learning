@@ -25,7 +25,7 @@ async function indexing() {
     const embeddings = new GoogleGenerativeAIEmbeddings({
     apiKey: process.env.GEMINI_API_KEY,
     model: 'text-embedding-004',
-  });
+   });
 
   const pinecone = new Pinecone();
   const pineconeIndex = pinecone.Index(process.env.PINECONE_INDEX_NAME);

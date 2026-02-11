@@ -5,7 +5,7 @@ const ai = new GoogleGenerativeAI({});
 
 async function main() {
   const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     contents: "What is current date and my name?",
     config:{
         systemInstruction:`your name is Harshit Vashisht , current date is: ${new Date().toLocaleDateString()}`
